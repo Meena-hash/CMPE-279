@@ -1,9 +1,13 @@
 Name - Meena Priyadharshini Ravi Shankar Bhat
 SID - 015355925
 
-build - gcc server.c -o server
+Assignment 1:
 
-run - ./server
+`cd assignment1`
+
+build - `gcc server.c -o server`
+
+run - `./server`
 
 result screenprint
 
