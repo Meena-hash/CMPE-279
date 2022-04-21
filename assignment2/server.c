@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 
 #define PORT 8080
+
 int main(int argc, char const *argv[])
 {
     int server_fd, new_socket, valread;
@@ -21,7 +22,7 @@ int main(int argc, char const *argv[])
     char *hello = "Hello from server";
     // nobody user
     struct passwd *p;
-    char nobody_user[] = "nobody"; 
+    char nobody_user[] = "nobody";
 
     // Show ASLR
     printf("execve=0x%p\n", execve);
@@ -86,21 +87,32 @@ int main(int argc, char const *argv[])
             perror("getpwnam failed");
             exit(EXIT_FAILURE);
         }
-        else
+	{
+            // changing uid to nobody in child process
+            printf("Dropping the child's privileges ..\n");
             setuid(p->pw_uid);
-	// execute the server 
+        }
+        // if something went wrong with dropping privileges .. then error.
         if ((int)getuid() != p->pw_uid)
         {
             perror("Changing uid failed..\n");
             exit(EXIT_FAILURE);
         }
-	 printf("Re-executing server from child process..\n");
-         char socketarg[10];
-         sprintf(socketarg, "%d", new_socket);
-         char *args[] = {"child", socketarg, NULL};
-         execvp(argv[0], args);
-         exit(0);
+	// printf("argv[0] is  %s", argv[0]);
+        printf("Re-executing server from child process..\n");
+	char socketarg[10];
+        sprintf(socketarg, "%d", new_socket);
+        char *args[] = {"child", socketarg, NULL};
+        int execution_status = execvp("./server", args);
+	// printf("Execution status %d", execution_status);
+        if(execution_status<0){
+          perror("Something went wrong..\n");
+          exit(EXIT_FAILURE);
+            }
+	
+	exit(0);
     }
     wait(NULL);
     return 0;
 }
+
