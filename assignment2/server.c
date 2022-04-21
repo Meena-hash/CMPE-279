@@ -29,6 +29,8 @@ int main(int argc, char const *argv[])
 
     if (strcmp(argv[0], "child") == 0)
     {
+        // sending and receiving messages
+        // inside re-exec'd child
         int socket_arg = atoi(argv[1]);
         valread = read(socket_arg, buffer, 1024);
         printf("%s\n", buffer);
@@ -87,7 +89,7 @@ int main(int argc, char const *argv[])
             perror("getpwnam failed");
             exit(EXIT_FAILURE);
         }
-	{
+        {
             // changing uid to nobody in child process
             printf("Dropping the child's privileges ..\n");
             setuid(p->pw_uid);
@@ -98,21 +100,21 @@ int main(int argc, char const *argv[])
             perror("Changing uid failed..\n");
             exit(EXIT_FAILURE);
         }
-	// printf("argv[0] is  %s", argv[0]);
+        // printf("argv[0] is  %s", argv[0]);
         printf("Re-executing server from child process..\n");
-	char socketarg[10];
+        char socketarg[10];
         sprintf(socketarg, "%d", new_socket);
         char *args[] = {"child", socketarg, NULL};
         int execution_status = execvp("./server", args);
-	// printf("Execution status %d", execution_status);
-        if(execution_status<0){
-          perror("Something went wrong..\n");
-          exit(EXIT_FAILURE);
-            }
-	
-	exit(0);
+        // printf("Execution status %d", execution_status);
+        if (execution_status < 0)
+        {
+            perror("Something went wrong..\n");
+            exit(EXIT_FAILURE);
+        }
+
+        exit(0);
     }
     wait(NULL);
     return 0;
 }
-
